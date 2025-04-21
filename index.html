@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <
+meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Master Strategist - Interactive</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: #f5f5f5; margin: 0; padding: 20px; }
+    .container { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 5px 15px rgba(0,0,0,0.1); max-width: 700px; margin: auto; margin-bottom: 20px; }
+    h1 { text-align: center; color: #333; }
+    select, button { width: 100%; margin-bottom: 1rem; padding: 0.75rem; border: 1px solid #ccc; border-radius: 0.5rem; }
+    button { background: #0078D7; color: white; border: none; cursor: pointer; }
+    .hidden { display: none; }
+    .output { margin-top: 1rem; background: #eef2f5; padding: 1rem; border-radius: 0.5rem; white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <!-- Stage 1: Diagnosis -->
+  <div id="diagnosisSection" class="container">
+    <h1>1. Diagnosis</h1>
+    <p><em>Select one category of everyday inputs.</em></p>
+    <select id="challengeSelect">
+      <option value="needs">Needs</option>
+      <option value="wants">Wants</option>
+      <option value="necessities">Necessities</option>
+      <option value="desires">Desires</option>
+      <option value="love">What They Love</option>
+    </select>
+    <button id="btnDiagnose">Analyze and Diagnose</button>
+    <div id="diagnosisOutput" class="output"></div>
+  </div>
+
+  <!-- Stage 2: Guiding Policy -->
+  <div id="policySection" class="container hidden">
+    <h1>2. Guiding Policy</h1>
+    <div id="policyOutput" class="output"></div>
+    <button id="btnPolicyNext">Next: Coherent Actions</button>
+  </div>
+
+  <!-- Stage 3: Coherent Actions -->
+  <div id="actionsSection" class="container hidden">
+    <h1>3. Coherent Actions</h1>
+    <div id="actionsOutput" class="output"></div>
+    <button id="btnActionsNext">Next: Strategy Simulation</button>
+  </div>
+
+  <!-- Stage 4: Strategy Simulation -->
+  <div id="simulationSection" class="container hidden">
+    <h1>4. Strategy Simulation</h1>
+    <div id="simulationOutput" class="output"></div>
+  </div>
+
+  <script>
+    // Static rule-based maps
+    const aspectMap = {
+      needs: 'food, shelter, sleep, healthcare, hygiene',
+      wants: 'connection, enjoyment, relaxation, efficiency, comfort',
+      necessities: 'water, clothing, security, transportation, sanitation',
+      desires: 'happiness, purpose, fulfillment, success, growth',
+      love: 'family, friends, hobbies, passions, community'
+    };
+    const envMap = key => `Managing '${key}' in daily life requires adaptability and foresight.`;
+    const insightMap = key => `Effective handling of '${key}' depends on strategic planning and resilience.`;
+    const sentimentMap = { needs:0.5, wants:0.6, necessities:0.4, desires:0.8, love:0.9 };
+
+    // Helper to show one section
+    function showSection(id) {
+      ['diagnosisSection','policySection','actionsSection','simulationSection']
+        .forEach(sec => document.getElementById(sec).classList.toggle('hidden', sec !== id));
+    }
+
+    // Stage 1: Diagnosis
+    document.getElementById('btnDiagnose').addEventListener('click', () => {
+      const key = document.getElementById('challengeSelect').value;
+      const aspects = aspectMap[key] || '';
+      const env = envMap(key);
+      const insights = insightMap(key);
+      const score = sentimentMap[key] || 0.5;
+      const desc = `Category: ${key}\nAspects: ${aspects}\nEnvironment: ${env}\nInsights: ${insights}\nSentiment Score: ${score}`;
+      document.getElementById('diagnosisOutput').innerText = desc;
+      localStorage.setItem('ms_diagnosis', JSON.stringify({ key, aspects, env, insights, score }));
+
+      // Generate and show policy immediately
+      const policyText = `Leverage aspects (${aspects}) with sentiment ${score} to overcome challenges.`;
+      document.getElementById('policyOutput').innerText = policyText;
+      localStorage.setItem('ms_policy', JSON.stringify({ policy: policyText }));
+
+      showSection('policySection');
+    });
+
+    // Stage 2: Guiding Policy -> Coherent Actions
+    document.getElementById('btnPolicyNext').addEventListener('click', () => {
+      const policyObj = JSON.parse(localStorage.getItem('ms_policy') || '{}');
+      const policy = policyObj.policy || '';
+      const steps = policy.split('.').map(s => s.trim()).filter(Boolean);
+      document.getElementById('actionsOutput').innerText = steps.map((s,i) => `${i+1}. ${s}`).join('\n');
+      localStorage.setItem('ms_actions', JSON.stringify(steps));
+      showSection('actionsSection');
+    });
+
+    // Stage 3: Coherent Actions -> Strategy Simulation
+    document.getElementById('btnActionsNext').addEventListener('click', () => {
+      showSection('simulationSection');
+      const acts = JSON.parse(localStorage.getItem('ms_actions') || '[]');
+      const sim = acts.map((a,i) => `Action ${i+1}: ${a}\nOutcome: ${Math.round(Math.random()*50+50)}% success`).join('\n\n');
+      document.getElementById('simulationOutput').innerText = sim;
+    });
+  </script>
+</body>
+</html>
